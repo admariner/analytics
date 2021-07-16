@@ -144,12 +144,6 @@ export function toHuman(query) {
   }
 }
 
-export function removeQueryParam(search, parameter) {
-  const q = new URLSearchParams(search)
-  q.delete(parameter)
-  return q.toString()
-}
-
 export function eventName(query) {
   if (query.filters.goal) {
     if (query.filters.goal.startsWith('Visit ')) {
@@ -158,4 +152,23 @@ export function eventName(query) {
     return 'events'
   }
   return 'pageviews'
+}
+
+export const formattedFilters = {
+  'goal': 'Goal',
+  'props': 'Goal properties',
+  'source': 'Source',
+  'utm_medium': 'UTM Medium',
+  'utm_source': 'UTM Source',
+  'utm_campaign': 'UTM Campaign',
+  'referrer': 'Referrer URL',
+  'screen': 'Screen size',
+  'browser': 'Browser',
+  'browser_version': 'Browser Version',
+  'os': 'Operating System',
+  'os_version': 'Operating System Version',
+  'country': 'Country',
+  'page': 'Page',
+  'entry_page': 'Entry Page',
+  'exit_page': 'Exit Page'
 }

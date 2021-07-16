@@ -196,7 +196,9 @@ defmodule PlausibleWeb.Api.ExternalController do
     user_agent = List.first(Plug.Conn.get_req_header(conn, "user-agent")) || ""
     ip_address = PlausibleWeb.RemoteIp.get(conn)
 
-    SipHash.hash!(salt, user_agent <> ip_address <> domain <> hostname)
+    if domain && hostname do
+      SipHash.hash!(salt, user_agent <> ip_address <> domain <> hostname)
+    end
   end
 
   defp calculate_screen_size(nil), do: nil
@@ -218,8 +220,14 @@ defmodule PlausibleWeb.Api.ExternalController do
   end
 
   defp parse_body(conn) do
-    {:ok, body, _conn} = Plug.Conn.read_body(conn)
-    Jason.decode!(body)
+    case conn.body_params do
+      %Plug.Conn.Unfetched{} ->
+        {:ok, body, _conn} = Plug.Conn.read_body(conn)
+        Jason.decode!(body)
+
+      params ->
+        params
+    end
   end
 
   defp strip_www(nil), do: nil

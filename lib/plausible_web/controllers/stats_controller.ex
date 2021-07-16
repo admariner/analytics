@@ -4,33 +4,37 @@ defmodule PlausibleWeb.StatsController do
   alias Plausible.Stats.Clickhouse, as: Stats
   alias Plausible.Stats.Query
 
-  plug PlausibleWeb.AuthorizeStatsPlug when action in [:stats, :csv_export]
-  plug PlausibleWeb.UpgradeBillingPlug when action in [:stats]
-
-  def base_domain() do
-    PlausibleWeb.Endpoint.host()
-  end
+  plug PlausibleWeb.AuthorizeSiteAccess when action in [:stats, :csv_export]
 
   def stats(%{assigns: %{site: site}} = conn, _params) do
-    if Stats.has_pageviews?(site) do
-      demo = site.domain == base_domain()
-      offer_email_report = get_session(conn, site.domain <> "_offer_email_report")
+    has_pageviews = Stats.has_pageviews?(site)
 
-      conn
-      |> assign(:skip_plausible_tracking, !demo)
-      |> remove_email_report_banner(site)
-      |> put_resp_header("x-robots-tag", "noindex")
-      |> render("stats.html",
-        site: site,
-        has_goals: Plausible.Sites.has_goals?(site),
-        title: "Plausible · " <> site.domain,
-        offer_email_report: offer_email_report,
-        demo: demo
-      )
-    else
-      conn
-      |> assign(:skip_plausible_tracking, true)
-      |> render("waiting_first_pageview.html", site: site)
+    cond do
+      !site.locked && has_pageviews ->
+        demo = site.domain == PlausibleWeb.Endpoint.host()
+        offer_email_report = get_session(conn, site.domain <> "_offer_email_report")
+
+        conn
+        |> assign(:skip_plausible_tracking, !demo)
+        |> remove_email_report_banner(site)
+        |> put_resp_header("x-robots-tag", "noindex")
+        |> render("stats.html",
+          site: site,
+          has_goals: Plausible.Sites.has_goals?(site),
+          title: "Plausible · " <> site.domain,
+          offer_email_report: offer_email_report,
+          demo: demo
+        )
+
+      !site.locked && !has_pageviews ->
+        conn
+        |> assign(:skip_plausible_tracking, true)
+        |> render("waiting_first_pageview.html", site: site)
+
+      site.locked ->
+        conn
+        |> assign(:skip_plausible_tracking, true)
+        |> render("site_locked.html", site: site)
     end
   end
 
@@ -82,7 +86,6 @@ defmodule PlausibleWeb.StatsController do
           _e ->
             conn
             |> assign(:skip_plausible_tracking, true)
-            |> delete_resp_header("x-frame-options")
             |> render("shared_link_password.html",
               link: shared_link,
               layout: {PlausibleWeb.LayoutView, "focus.html"}
@@ -117,12 +120,10 @@ defmodule PlausibleWeb.StatsController do
 
         conn
         |> put_resp_cookie("shared-link-token", token)
-        |> delete_resp_header("x-frame-options")
         |> redirect(to: "/share/#{URI.encode_www_form(shared_link.site.domain)}?auth=#{slug}")
       else
         conn
         |> assign(:skip_plausible_tracking, true)
-        |> delete_resp_header("x-frame-options")
         |> render("shared_link_password.html",
           link: shared_link,
           error: "Incorrect password. Please try again.",
