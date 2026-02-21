@@ -355,6 +355,7 @@ PlausibleWeb.Components.FirstDashboardLaunchBanner.html
 PlausibleWeb.Components.FlowProgress.html
 PlausibleWeb.Components.Generic.html
 PlausibleWeb.Components.Google.html
+PlausibleWeb.Components.Icons.html
 PlausibleWeb.Components.Site.Feature.ToggleLive.html
 PlausibleWeb.Components.TwoFactor.html
 PlausibleWeb.ConnCase.html
@@ -562,8 +563,8 @@ dist/lato-latin-ext-300-normal-VPGGJKJL.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-NKANDIL5.woff2
-dist/search_data-D8B40BE6.js
-dist/sidebar_items-2077087C.js
+dist/search_data-D1CFEE87.js
+dist/sidebar_items-EF2F88D3.js
 index.html
 readme.html
 search.html
